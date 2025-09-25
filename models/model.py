@@ -48,6 +48,8 @@ class ViViT(nn.Module):
             nn.Linear(dim, num_classes)
         )
 
+        self.model_name = "ViViT"
+
     def forward(self, x):
         x = self.to_patch_embedding(x)
         b, t, n, _ = x.shape

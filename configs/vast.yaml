@@ -24,8 +24,7 @@ model:
   image_size: 224
   patch_size: 16
   num_classes: 6
-  num_frames : 30
-  depth : 1
+  num_frames : 16
   model_name: "vivit"
 
 # optim:

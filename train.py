@@ -36,7 +36,7 @@ def reload_model(model, optimizer, checkpoint_path):
     return past_epoch+1, model, optimizer
 
 
-def train_one_epoch(model, dataloader, optimizer, criterion, device, ctc_weight, scheduler):
+def train_one_epoch(model, dataloader, optimizer, criterion, device,  scheduler):
     model.train()
     total_loss = 0.0
 
@@ -50,7 +50,7 @@ def train_one_epoch(model, dataloader, optimizer, criterion, device, ctc_weight,
         optimizer.zero_grad()
 
         outputs   = model(
-            src = frames,
+            frames
         )  # [B, T_text, vocab_size]
         
         loss = criterion(outputs, labels)
@@ -73,7 +73,7 @@ def train_one_epoch(model, dataloader, optimizer, criterion, device, ctc_weight,
 
 from torchaudio.functional import rnnt_loss
 
-def evaluate(model, dataloader, optimizer, criterion, device, ctc_weight):
+def evaluate(model, dataloader, optimizer, criterion, device):
     model.eval()
     total_loss = 0.0
 
@@ -89,7 +89,7 @@ def evaluate(model, dataloader, optimizer, criterion, device, ctc_weight):
             optimizer.zero_grad()
 
             outputs   = model(
-                src = frames,
+                frames
             )  # [B, T_text, vocab_size]
             
             loss = criterion(outputs, labels)
@@ -151,7 +151,8 @@ def main():
         image_size=config['model']['image_size'], 
         patch_size=config['model']['patch_size'], 
         num_classes=config['model']['num_classes'],
-        num_frames = config['model']['num_frames']
+        num_frames = config['model']['num_frames'],
+        depth = config['model']['depth']
     ).to(device)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -160,7 +161,6 @@ def main():
 
     criterion = nn.CrossEntropyLoss()
 
-    ctc_weight = config['training']['ctc_weight']
 
     optimizer = Optimizer(model.parameters(), config['optim'])
 
@@ -188,8 +188,8 @@ def main():
 
     
     for epoch in range(start_epoch, num_epochs + 1):
-        train_loss, curr_lr = train_one_epoch(model, train_loader, optimizer, criterion, device, ctc_weight, scheduler)
-        val_loss = evaluate(model, dev_loader, optimizer, criterion, device, ctc_weight)
+        train_loss, curr_lr = train_one_epoch(model, train_loader, optimizer, criterion, device,  scheduler)
+        val_loss = evaluate(model, dev_loader, optimizer, criterion, device)
 
         logging.info(f"Epoch {epoch}: Train Loss = {train_loss:.4f}, Val Loss = {val_loss:.4f}, LR = {curr_lr:.6f}")
         # Save model checkpoint
